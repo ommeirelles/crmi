@@ -1,5 +1,3 @@
-import sys
-import traceback
 from flask import Blueprint, request, Response
 from services.entry import getNamespaceData, saveEntryRecursive
 from services.namespace import getNamespace, createNamespace
@@ -8,7 +6,7 @@ from services.language import getLanguageIDByCode
 
 namespaceApp = Blueprint('namespace', __name__)
 
-@namespaceApp.route("/<language>/<namespaceName>")
+@namespaceApp.route("/<language>/<namespaceName>", methods=["GET"])
 def loadNamespace(language: str, namespaceName: str):
     namespace = getNamespace(namespaceName, language)
     if (namespace is None): 
@@ -36,8 +34,5 @@ def saveNamespace(language: str, namespaceName: str):
             session.commit()
             return getNamespaceData(namespaceId)
         except:
-            for frame in traceback.extract_tb(sys.exc_info()[2]):
-                fname, lineno, fn, text = frame
-                print( "Error in %s on line %d" % (fname, lineno), fn, text)
             session.rollback()
             return Response("Something went wrong", status=500)

@@ -9,6 +9,7 @@ start = "python3 main.py"
 [packages]
 sqlalchemy = "*"
 flask = "*"
+bcrypt = "*"
 
 [dev-packages]
 
