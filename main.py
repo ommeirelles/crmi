@@ -7,7 +7,8 @@ from controllers import namespaceApp, AuthMiddleware, userApp, languageApp
 isDev: bool = environ.get('ENV') == 'development'
 secretKey: str = environ.get('SECRET')
 app: Flask = Flask(__name__)
-engine =create_engine("sqlite:///crmi.db", echo=isDev)
+dbName = environ.get("DB_NAME")
+engine = create_engine("sqlite:///"+dbName+".db", echo=isDev)
 
 @app.after_request
 def applyCORS(response):
@@ -26,5 +27,5 @@ if __name__ == "__main__":
     app.register_blueprint(namespaceApp) 
     app.register_blueprint(userApp)
     app.register_blueprint(languageApp)
-    app.run(debug=isDev)
+    app.run(debug=isDev, port=int(environ.get("PORT")))
 
