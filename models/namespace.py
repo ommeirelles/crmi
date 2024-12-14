@@ -10,3 +10,11 @@ class NamespaceModel(Base):
     language_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey("languages.id"), nullable=False)
     
     UniqueConstraint("language_id", "name")
+
+    def as_dict(self) -> dict:
+        return {
+            "language_id": self.language_id,
+            "name": self.name,
+            "id": self.id
+        }
+

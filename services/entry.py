@@ -1,5 +1,5 @@
 from models import EntryModel, Session
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import aliased
 
 def getNamespaceData(namespaceId: int):
@@ -23,9 +23,9 @@ def getNamespaceData(namespaceId: int):
 def __parseNamespaceDataToJson(rows: list[EntryModel], parentElement: str | None = None, parentObj: dict | None = None) -> dict:
     if (parentElement is None):
         root = [entry for entry in rows if entry.parent is None and entry.value is None]
-        if (len(root) == 0): raise Exception("No root found")
+        if (len(root) == 0): return {}
 
-        return __parseNamespaceDataToJson(rows, root[0].key, {})
+        return { root[0].key: __parseNamespaceDataToJson(rows, root[0].key, {}) }
 
     for entry in [el for el in rows if el.parent == parentElement]:
         if (entry.value == None):
@@ -77,3 +77,9 @@ def saveEntryRecursive(obj: dict, namespace_id: int, parent_id: int | None = Non
                 saveEntryRecursive(value, namespace_id, parent.id, session=session)
         elif (type(key) == dict):
             saveEntryRecursive(key, namespace_id, parent_id=parent_id, session=session)
+    
+
+def emptyEntries(namespaceId):
+    with Session() as session:
+        session.execute(delete(EntryModel).where(EntryModel.namespace_id == namespaceId))
+        session.commit()

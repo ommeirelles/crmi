@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session
 from werkzeug.wrappers import Request, Response, ResponseStream
 from controllers.session import getSessionByToken, INVALID_TOKEN, HEADER_TOKEN
 
@@ -11,7 +11,7 @@ class AuthMiddleware():
     def __call__(self, environ, start_response):
         request = Request(environ)
 
-        if (request.path in OPEN_ROUTES): return self.app(environ, start_response)
+        if (request.path in OPEN_ROUTES or request.method == "OPTIONS"): return self.app(environ, start_response)
 
         try:
             token = request.headers.get(HEADER_TOKEN)

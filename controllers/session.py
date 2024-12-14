@@ -9,7 +9,7 @@ def generateSession(user: UserModel):
     return bcrypt.hashpw(str(user.id).encode("utf-8"), bcrypt.gensalt())
 
 def checkSession(session: str, user: UserModel) -> bool:
-    return bcrypt.checkpw(str(user.id).encode("utf-8"), session)
+    return bcrypt.checkpw(str(user.id).encode("utf-8"), session.encode("utf-8"))
 
 def getSessionByToken(token: str) -> UserModel | None:
     user = getUserBySession(token)

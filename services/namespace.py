@@ -1,9 +1,9 @@
 from sqlalchemy import select
 from models import Session, NamespaceModel
-from services.language import getLanguageIDByCode
+from services.language import getLanguageByCode
 
 def getNamespace(name: str, language: str):
-    languageModel = getLanguageIDByCode(language)
+    languageModel = getLanguageByCode(language)
     if (languageModel is None): return None;
 
     return Session().execute(
@@ -15,12 +15,17 @@ def getNamespace(name: str, language: str):
     ).scalar()
 
 
-def createNamespace(name: str, language_id: int, session = Session()) -> NamespaceModel:
+def createNamespace(name: str, language_id: int) -> NamespaceModel:
     namespace = NamespaceModel()
     namespace.name = name
     namespace.language_id = language_id
 
-    session.add(namespace)
-    session.flush()
-    session.refresh(namespace)
-    return namespace
+    with Session() as session:
+        session.add(namespace)
+        session.commit()
+        session.refresh(namespace)
+        return namespace
+
+def getNamespaces(langCode: str):
+    language = getLanguageByCode(langCode)
+    return Session().execute(select(NamespaceModel).where(NamespaceModel.language_id == language.id)).scalars()
