@@ -1,5 +1,8 @@
 # Install Deps
 
+In order to run the pipenv is necessary. To install it just executa `pip install pipenv`
+After installed it shoud be run the install of dependencies with the following command.
+
 `pipenv install`
 
 # Run
