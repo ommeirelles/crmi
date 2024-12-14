@@ -10,6 +10,9 @@ start = "python3 main.py"
 sqlalchemy = "*"
 flask = "*"
 bcrypt = "*"
+flask-openapi3 = "*"
+pydantic = "*"
+flask-openapi3-swagger = "*"
 
 [dev-packages]
 

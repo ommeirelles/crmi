@@ -1,14 +1,21 @@
-from flask import Blueprint, request, Response
 from controllers.session import generateSession
 from services.user import getUserByLogin, saveUser
 from services.session import saveSession
+from flask_openapi3 import  Tag
+from flask_openapi3.blueprint import APIBlueprint
+from flask import request, Response
+
 import bcrypt
 import json
 
-userApp = Blueprint('user', __name__)
+userApp = APIBlueprint('user', __name__)
+user_tag = Tag(name="user", description="Gerenciar usuarios")
 
-@userApp.route("/user/auth", methods=["POST"])
+@userApp.post("/user/auth", tags=[user_tag])
 def loadUser():
+    """
+        Authentica usuario
+    """
     login: str | None = None;
     password: str | None = None;
     if (request.headers.get("Content-Type") == "application/json"):
@@ -32,8 +39,11 @@ def loadUser():
     else:
         return Response("Invalid user name or password",status=401)
 
-@userApp.route("/user", methods=["POST"])
+@userApp.post("/user", tags=[user_tag])
 def createUser():
+    """
+        Cria e authentica usuario
+    """
     login: str | None = None;
     password: str | None = None;
     if (request.headers.get("Content-Type") == "application/json"):

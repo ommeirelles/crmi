@@ -1,11 +1,18 @@
-from flask import Blueprint, Response, request
 from services.language import getLanguageByCode, createLanguage, getAllLanguages
+from models.language import LanguageModel
 import json
+from flask_openapi3.blueprint import APIBlueprint
+from flask_openapi3 import  Tag
+from flask import request, Response
 
-languageApp = Blueprint('language', __name__)
+languageApp = APIBlueprint('language', __name__)
+language_tag = Tag(name="language", description="Gerenciar Linguagens")
 
-@languageApp.route("/language", methods=["POST"])
+@languageApp.post("/language", tags=[language_tag])
 def createLanguageResolver():
+    """
+        Criar linguagem
+    """
     language: str | None = None
     name: str | None = None
     if (request.headers.get("Content-Type") == "application/json"):
@@ -23,8 +30,11 @@ def createLanguageResolver():
     return Response(createLanguage(language.upper(), name).to_JSON(), status=200)
 
 
-@languageApp.route("/languages", methods=["GET"])
+@languageApp.get("/languages", tags=[language_tag])
 def getLanguagesResolver():
+    """
+        Buscar todas as linguagens
+    """
     return Response(json.dumps({
         "languages": [lang.as_dict() for lang in list(getAllLanguages())]
     }), status=200)

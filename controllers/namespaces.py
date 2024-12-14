@@ -1,14 +1,21 @@
-from flask import Blueprint, request, Response
 from services.entry import getNamespaceData, saveEntryRecursive, emptyEntries
 from services.namespace import getNamespace, createNamespace, getNamespaces
 from models import Session
 from services.language import getLanguageByCode
+from flask_openapi3 import  Tag
+from flask_openapi3.blueprint import APIBlueprint
+from flask import request, Response
 import json
 
-namespaceApp = Blueprint('namespace', __name__)
+namespaceApp = APIBlueprint('namespace', __name__)
+namespace_tag = Tag(name="namespace", description="Manage namespaces")
 
-@namespaceApp.route("/language/<language>/namespace", methods=["POST"])
-def createNamespaceResolver(language):
+@namespaceApp.post("/language/<language>/namespace", tags=[namespace_tag])
+def createNamespaceResolver():
+    """
+    Para criar novos namespaces para a linguagem especifica
+    """
+    language = request.view_args.get("language")
     name: str | None = None
     if (request.headers.get("Content-Type") == "application/json"):
         data = request.get_json()
@@ -26,22 +33,35 @@ def createNamespaceResolver(language):
     namespace = createNamespace(name, languageModel.id)
     return Response(namespace.to_JSON(), status=200)
 
-@namespaceApp.route("/language/<language>/namespaces", methods=["GET"])
-def getNamespacesResolver(language):
+@namespaceApp.get("/language/<language>/namespaces", tags=[namespace_tag])
+def getNamespacesResolver():
+    """
+    Para buscar todos os namespaces disponiveis para uma linguagem especifica
+    """
+    language = request.view_args.get("language")
     return Response(json.dumps({
         "namespaces": [n.as_dict() for n in list(getNamespaces(language))]
     }),status=200)
 
-
-@namespaceApp.route("/language/<language>/namespace/<namespaceName>", methods=["GET"])
-def loadNamespace(language: str, namespaceName: str):
+@namespaceApp.get("/language/<language>/namespace/<namespaceName>", tags=[namespace_tag])
+def loadNamespace():
+    """
+    Para buscar todos os valores configurados de um namespace
+    """
+    language = request.view_args.get("language")
+    namespaceName = request.view_args.get("namespaceName")
     namespace = getNamespace(namespaceName, language)
     if (namespace is None): 
         return Response("Invalid namespace provided", status=400)
     return getNamespaceData(namespace.id)
 
-@namespaceApp.route("/language/<language>/namespace/<namespaceName>", methods=["POST"])
-def saveNamespace(language: str, namespaceName: str):
+@namespaceApp.post("/language/<language>/namespace/<namespaceName>", tags=[namespace_tag])
+def saveNamespace():
+    """
+    Para salvar um namespace completo
+    """
+    namespaceName = request.view_args.get("namespaceName")
+    language = request.view_args.get("language")
     languageModel = getLanguageByCode(language)
     if (languageModel == None):
         return Response("Invalid Language code provided", status=400)
