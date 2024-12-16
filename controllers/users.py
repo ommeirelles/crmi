@@ -4,27 +4,30 @@ from services.session import saveSession
 from flask_openapi3 import  Tag
 from flask_openapi3.blueprint import APIBlueprint
 from flask import request, Response
-
+from controllers.docs import createUser200, createUser400,loadUser200, loadUser400
+from pydantic import BaseModel, Field, ConfigDict
 import bcrypt
 import json
 
 userApp = APIBlueprint('user', __name__)
 user_tag = Tag(name="user", description="Gerenciar usuarios")
 
-@userApp.post("/user/auth", tags=[user_tag])
-def loadUser():
+class UserBody(BaseModel):
+    model_config = ConfigDict(coerce_numbers_to_str=True)
+    login: str = Field("ommeirelles@gmail.com", description="Login do usuario")
+    password: str = Field(..., min_length=6, max_length=10, description="Senha do usuario")
+
+@userApp.post("/user/auth", tags=[user_tag],responses={
+    200: loadUser200,
+    400: loadUser400
+})
+def loadUser(form: UserBody):
     """
         Authentica usuario
     """
-    login: str | None = None;
-    password: str | None = None;
-    if (request.headers.get("Content-Type") == "application/json"):
-        data = request.get_json()
-        login = data.get("login")
-        password = data.get("password")
-    else:
-        login = request.form.get("login")
-        password = request.form.get("password")
+    login = form.login
+    password = form.password
+
     if (login == None or password == None): return Response("Invalid payload, missing login or password", status=400)
 
     user = getUserByLogin(login)
@@ -39,20 +42,16 @@ def loadUser():
     else:
         return Response("Invalid user name or password",status=401)
 
-@userApp.post("/user", tags=[user_tag])
-def createUser():
+@userApp.post("/user", tags=[user_tag], responses={
+    200: createUser200,
+    400: createUser400
+})
+def createUser(form: UserBody):
     """
         Cria e authentica usuario
     """
-    login: str | None = None;
-    password: str | None = None;
-    if (request.headers.get("Content-Type") == "application/json"):
-        data = request.get_json()
-        login = data.get("login")
-        password = data.get("password")
-    else:
-        login = request.form.get("login")
-        password = request.form.get("password")
+    login = form.login
+    password = form.password
 
     if (login == None or password == None): return Response("Invalid payload, missing login or password", status=400)
     login = login.lower()
